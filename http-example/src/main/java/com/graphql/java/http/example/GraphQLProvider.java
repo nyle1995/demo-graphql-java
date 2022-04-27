@@ -1,7 +1,22 @@
 package com.graphql.java.http.example;
 
+import static graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentationOptions.newOptions;
+import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
+import static java.util.Arrays.asList;
+
+import java.io.IOException;
+import java.net.URL;
+
+import javax.annotation.PostConstruct;
+
+import org.dataloader.DataLoaderRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
+
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+
 import graphql.GraphQL;
 import graphql.execution.instrumentation.ChainedInstrumentation;
 import graphql.execution.instrumentation.Instrumentation;
@@ -12,18 +27,6 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import org.dataloader.DataLoaderRegistry;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.net.URL;
-
-import static graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentationOptions.newOptions;
-import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
-import static java.util.Arrays.asList;
 
 @Component
 public class GraphQLProvider {
@@ -70,6 +73,7 @@ public class GraphQLProvider {
         return RuntimeWiring.newRuntimeWiring()
                 .type(newTypeWiring("Query")
                         .dataFetcher("hero", starWarsWiring.heroDataFetcher)
+                        .dataFetcher("heros", starWarsWiring.herosDataFetcher)
                         .dataFetcher("human", starWarsWiring.humanDataFetcher)
                         .dataFetcher("droid", starWarsWiring.droidDataFetcher)
                 )
@@ -78,6 +82,11 @@ public class GraphQLProvider {
                 )
                 .type(newTypeWiring("Droid")
                         .dataFetcher("friends", starWarsWiring.friendsDataFetcher)
+                ).type(newTypeWiring("Human")
+                        .dataFetcher("demoBatch", starWarsWiring.demoBatchDataFetcher)
+                )
+                .type(newTypeWiring("Droid")
+                        .dataFetcher("demoBatch", starWarsWiring.demoBatchDataFetcher)
                 )
 
                 .type(newTypeWiring("Character")

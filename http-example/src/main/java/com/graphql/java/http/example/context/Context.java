@@ -19,4 +19,8 @@ public class Context {
     public DataLoader<String, Object> getCharacterDataLoader() {
         return dataLoaderRegistry.getDataLoader("characters");
     }
+
+    public DataLoader<String, Object> getCharacterDataLoader2() {
+        return dataLoaderRegistry.getDataLoader("demoBatch");
+    }
 }

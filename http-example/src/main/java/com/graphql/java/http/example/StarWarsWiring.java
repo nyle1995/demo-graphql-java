@@ -1,23 +1,26 @@
 package com.graphql.java.http.example;
 
-import com.graphql.java.http.example.context.Context;
-import com.graphql.java.http.example.data.Episode;
-import com.graphql.java.http.example.data.FilmCharacter;
-import com.graphql.java.http.example.data.Human;
-import com.graphql.java.http.example.data.StarWarsData;
-import graphql.schema.DataFetcher;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.TypeResolver;
-import graphql.schema.idl.EnumValuesProvider;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
 import org.dataloader.BatchLoader;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import com.graphql.java.http.example.context.Context;
+import com.graphql.java.http.example.data.Episode;
+import com.graphql.java.http.example.data.FilmCharacter;
+import com.graphql.java.http.example.data.Human;
+import com.graphql.java.http.example.data.StarWarsData;
+
+import graphql.schema.DataFetcher;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.TypeResolver;
+import graphql.schema.idl.EnumValuesProvider;
 
 /**
  * This is our wiring used to put fetching behaviour behind a graphql field.
@@ -30,6 +33,10 @@ public class StarWarsWiring {
     public StarWarsWiring() {
         this.dataLoaderRegistry = new DataLoaderRegistry();
         dataLoaderRegistry.register("characters", newCharacterDataLoader());
+        dataLoaderRegistry.register("demoBatch", new DataLoader<>((BatchLoader<String, Object>) keys -> {
+            System.out.println(keys);
+            return CompletableFuture.supplyAsync(() -> keys.stream().map(s -> "demo" + s).collect(Collectors.toList()));
+        }));
     }
 
     @Bean
@@ -84,11 +91,22 @@ public class StarWarsWiring {
         return ctx.getCharacterDataLoader().load("2001"); // R2D2
     };
 
+    DataFetcher herosDataFetcher = environment -> {
+        Context ctx = environment.getContext();
+        return ctx.getCharacterDataLoader().loadMany(Arrays.asList("2001", "2000")); // R2D2
+    };
+
     DataFetcher friendsDataFetcher = environment -> {
         FilmCharacter character = environment.getSource();
         List<String> friendIds = character.getFriends();
         Context ctx = environment.getContext();
         return ctx.getCharacterDataLoader().loadMany(friendIds);
+    };
+
+    DataFetcher demoBatchDataFetcher = environment -> {
+        FilmCharacter character = environment.getSource();
+        Context ctx = environment.getContext();
+        return ctx.getCharacterDataLoader2().load(character.getId());
     };
 
     /**

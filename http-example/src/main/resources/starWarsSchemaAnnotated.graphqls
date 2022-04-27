@@ -17,6 +17,11 @@ type Query {
         episode: Episode
     ) : Character
 
+    heros(
+        # You can indicate what episode the hero was in
+        episode: Episode
+    ) : [Character]
+
     human(
         # The id of the human you are interested in
         id : String
@@ -47,6 +52,9 @@ interface Character {
     # The friends of the character, or an empty list if they
     # have none.
     friends: [Character]
+
+    demoBatch: String
+
     # Which movies they appear in.
     appearsIn: [Episode]!
     # All secrets about their past.
@@ -61,6 +69,9 @@ type Human implements Character {
     name: String!
     # The friends of the human, or an empty list if they have none.
     friends: [Character]
+
+    demoBatch: String
+
     # Which movies they appear in.
     appearsIn: [Episode]!
     # The home planet of the human, or null if unknown.
@@ -77,6 +88,9 @@ type Droid implements Character {
     name: String!
     # The friends of the droid, or an empty list if they have none.
     friends: [Character]
+
+    demoBatch: String
+
     # Which movies they appear in.
     appearsIn: [Episode]!
     # The primary function of the droid.
